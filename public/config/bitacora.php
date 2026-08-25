@@ -811,6 +811,7 @@ function app_bitacora_default_form_sections(array $companyConfig, int $empresaId
         'Lina Hernández - Jefe de Gestión Humana' => 'Lina Hernández - Jefe de Gestión Humana',
         'Nicol Muñoz - Supervisora de Mantenimiento' => 'Nicol Muñoz - Supervisora de Mantenimiento',
         'Pamela Valencia - Coordinadora de SST' => 'Pamela Valencia - Coordinadora de SST',
+        'Paola Varón - Auxiliar de SST' => 'Paola Varón - Auxiliar de SST',
         'Sandra González - Tesorera' => 'Sandra Milena González -Tesorera',
         'Sandra Tapia - Subgerente' => 'Sandra Tapia - Subgerente',
         'Valentina Charry - Diseñadora' => 'Valentina Charry - Diseñadora',
