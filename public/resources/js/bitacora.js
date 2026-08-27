@@ -635,7 +635,7 @@ $(function () {
     });
 
     $(window).on('beforeunload', function () {
-        if (window.bitacoraDraftStore && window.bitacoraDraftStore.hasUnsavedChanges()) {
+        if (!window.appSessionTimeoutRedirecting && window.bitacoraDraftStore && window.bitacoraDraftStore.hasUnsavedChanges()) {
             return 'Tienes cambios sin guardar en la bitácora.';
         }
     });

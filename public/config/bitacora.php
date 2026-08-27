@@ -1239,7 +1239,7 @@ function app_bitacora_default_form_sections(array $companyConfig, int $empresaId
 
             $insertAt = count((array) ($section['fields'] ?? []));
             foreach ((array) ($section['fields'] ?? []) as $index => $field) {
-                if ((string) ($field['type'] ?? '') === 'subsection' && (string) ($field['name'] ?? '') === 'reservas') {
+                if ((string) ($field['type'] ?? '') === 'subsection' && (string) ($field['name'] ?? '') === 'novedades_reservas') {
                     $insertAt = $index;
                     break;
                 }

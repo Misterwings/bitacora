@@ -1,0 +1,135 @@
+.app-session-timeout[hidden] {
+    display: none !important;
+}
+
+.app-session-timeout {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.62);
+    backdrop-filter: blur(4px);
+}
+
+.app-session-timeout-open {
+    overflow: hidden !important;
+}
+
+.app-session-timeout-dialog {
+    width: min(100%, 470px);
+    padding: 30px;
+    border: 1px solid rgba(215, 25, 32, 0.22);
+    border-radius: 22px;
+    outline: none;
+    background: #ffffff;
+    color: #1f2937;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.35);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.app-session-timeout-kicker {
+    display: block;
+    margin-bottom: 8px;
+    color: #8b1116;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.app-session-timeout-dialog h2 {
+    margin: 0 0 12px;
+    color: #16181d;
+    font-size: clamp(23px, 4vw, 30px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.app-session-timeout-dialog p {
+    margin: 0;
+    color: #5f6878;
+    line-height: 1.55;
+}
+
+.app-session-timeout-dialog strong {
+    color: #d71920;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.app-session-timeout-status {
+    margin-top: 12px !important;
+    color: #92400e !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.app-session-timeout-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.app-session-timeout-actions button {
+    min-height: 44px;
+    border: 0;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+}
+
+.app-session-timeout-primary {
+    color: #ffffff;
+    background: linear-gradient(135deg, #d71920, #8b1116);
+    box-shadow: 0 10px 22px rgba(215, 25, 32, 0.24);
+}
+
+.app-session-timeout-secondary {
+    color: #2f3542;
+    background: #eef1f6;
+}
+
+.app-session-timeout-actions button:hover,
+.app-session-timeout-actions button:focus-visible {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+}
+
+.app-session-timeout-actions button:focus-visible {
+    outline: 3px solid rgba(215, 25, 32, 0.38);
+    outline-offset: 2px;
+}
+
+.app-session-timeout-actions button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+    transform: none;
+}
+
+@media (max-width: 520px) {
+    .app-session-timeout {
+        padding: 14px;
+    }
+
+    .app-session-timeout-dialog {
+        padding: 24px 20px;
+        border-radius: 18px;
+    }
+
+    .app-session-timeout-actions,
+    .app-session-timeout-actions button {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-session-timeout-actions button {
+        transition: none;
+    }
+}

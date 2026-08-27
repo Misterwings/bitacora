@@ -142,9 +142,10 @@ $source = app_bitacora_recipient_source($empresaId);
     <link rel="stylesheet" href="../resources/css/bitacora.css">
     <link rel="stylesheet" href="../resources/css/admin_formulario.css">
     <link rel="stylesheet" href="../resources/css/admin_destinatarios.css">
+    <link rel="stylesheet" href="../resources/css/session_timeout.css">
     <link rel="shortcut icon" href="../resources/img/LOGO ALITAS-09.png">
 </head>
-<body class="admin-page">
+<body class="admin-page" <?php echo app_session_client_attributes(); ?>>
 <main class="admin-shell">
     <header class="admin-topbar">
         <div class="admin-brand">
@@ -437,7 +438,9 @@ $source = app_bitacora_recipient_source($empresaId);
         <?php endif; ?>
     <?php endif; ?>
 </main>
+<?php require __DIR__ . '/session_timeout.php'; ?>
 <script src="../resources/jquery/jquery-3.6.0.min.js"></script>
+<script src="../resources/js/session_timeout.js"></script>
 <script src="../resources/js/admin_destinatarios.js"></script>
 </body>
 </html>

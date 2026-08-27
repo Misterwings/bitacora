@@ -21,6 +21,7 @@ if ($empresaId > 0) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="../resources/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../resources/css/session_timeout.css">
     <title>Bitácora Mister Wings</title>
     <style>
         * {
@@ -176,7 +177,7 @@ if ($empresaId > 0) {
         }
     </style>
 </head>
-<body>
+<body <?php echo app_session_client_attributes(); ?>>
 
 <div class="welcome-card">
     <div class="welcome-logo">
@@ -202,6 +203,8 @@ if ($empresaId > 0) {
         <span>Potenciado por Edson Ramos para Mister Wings®</span>
     </div>
 </div>
+<?php require __DIR__ . '/session_timeout.php'; ?>
 
+<script src="../resources/js/session_timeout.js"></script>
 </body>
 </html>

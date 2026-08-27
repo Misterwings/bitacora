@@ -39,9 +39,10 @@ $formType = (string) ($config['type'] ?? 'operational');
     <link rel="stylesheet" href="../resources/sweetalert/sweetalert2.min.css">
     <link rel="stylesheet" href="../resources/select2/select2.min.css">
     <link rel="stylesheet" href="../resources/css/bitacora.css">
+    <link rel="stylesheet" href="../resources/css/session_timeout.css">
     <link rel="shortcut icon" href="../resources/img/LOGO ALITAS-09.png" alt="Logo">
 </head>
-<body class="bitacora-page" data-bitacora-user="<?php echo app_h((string) ($_SESSION['s_usuario'] ?? '')); ?>" data-bitacora-nombre="<?php echo app_h((string) ($_SESSION['s_nombre'] ?? '')); ?>" data-bitacora-type="<?php echo app_h($formType); ?>">
+<body class="bitacora-page" <?php echo app_session_client_attributes(); ?> data-bitacora-user="<?php echo app_h((string) ($_SESSION['s_usuario'] ?? '')); ?>" data-bitacora-nombre="<?php echo app_h((string) ($_SESSION['s_nombre'] ?? '')); ?>" data-bitacora-type="<?php echo app_h($formType); ?>">
 <main class="bit-shell">
     <header class="bit-topbar">
         <div class="bit-brand">
@@ -112,10 +113,12 @@ $formType = (string) ($config['type'] ?? 'operational');
         </div>
     </section>
 </main>
+<?php require __DIR__ . '/session_timeout.php'; ?>
 
 <script src="../resources/jquery/jquery-3.6.0.min.js"></script>
 <script src="../resources/sweetalert/sweetalert2.all.min.js"></script>
 <script src="../resources/select2/select2.min.js"></script>
+<script src="../resources/js/session_timeout.js"></script>
 <script src="../resources/js/bitacora.js"></script>
 <script src="../localstorage_bitacora.js"></script>
 </body>

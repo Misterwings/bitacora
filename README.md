@@ -57,6 +57,7 @@ Guía completa: [`DEPLOYMENT.md`](DEPLOYMENT.md).
 - `BITACORA_MAIL_ASYNC=true` para encolar correos y procesarlos con worker CLI.
 - `SESSION_SECURE=true` en producción con HTTPS.
 - `SESSION_IDLE_TIMEOUT_SECONDS` y `SESSION_MAX_LIFETIME_SECONDS` para expirar sesiones por inactividad o vida máxima; `0` desactiva cada límite.
+- Las vistas autenticadas avisan 10 minutos antes del vencimiento y permiten renovar la sesión mediante una acción explícita.
 
 ## Seguridad
 

@@ -850,9 +850,11 @@ if (($_GET['ajax'] ?? '') === '1') {
     <link rel="stylesheet" href="../resources/select2/select2.min.css">
     <link rel="stylesheet" href="../resources/css/bitacora.css">
     <link rel="stylesheet" href="../resources/css/admin_formulario.css">
+    <link rel="stylesheet" href="../resources/css/session_timeout.css">
     <link rel="shortcut icon" href="../resources/img/LOGO ALITAS-09.png">
 </head>
 <body class="admin-page"
+      <?php echo app_session_client_attributes(); ?>
       data-admin-bitacora-id="<?php echo app_h((string) $empresaId); ?>"
       data-admin-url="admin_formulario.php"
       data-admin-csrf="<?php echo app_h(app_csrf_token()); ?>">
@@ -1089,10 +1091,12 @@ if (($_GET['ajax'] ?? '') === '1') {
         <div class="admin-modal-body" id="adminModalBox"></div>
     </div>
 </div>
+<?php require __DIR__ . '/session_timeout.php'; ?>
 
 <script src="../resources/jquery/jquery-3.6.0.min.js"></script>
 <script src="../resources/sweetalert/sweetalert2.all.min.js"></script>
 <script src="../resources/select2/select2.min.js"></script>
+<script src="../resources/js/session_timeout.js"></script>
 <script src="../resources/js/admin_formulario.js"></script>
 </body>
 </html>

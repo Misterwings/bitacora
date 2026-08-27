@@ -707,7 +707,7 @@ foreach ($operationsFields as $index => $field) {
         $barSubsectionIndex = $index;
     } elseif ($fieldName === 'novedades_chetano' && $fieldType === 'subsection') {
         $chetanoSubsectionIndex = $index;
-    } elseif ($fieldName === 'reservas' && $fieldType === 'subsection') {
+    } elseif ($fieldName === 'novedades_reservas' && $fieldType === 'subsection') {
         $reservationsSubsectionIndex = $index;
     } elseif ($fieldName === 'mp_chetano') {
         $lastChetanoFieldIndex = $index;
@@ -721,7 +721,7 @@ test_assert_same(
         && $reservationsSubsectionIndex > $lastChetanoFieldIndex,
     'Chetano block ordered between bar and reservations'
 );
-foreach (['novedades_chetano', 'chetano_novedades', 'procesados_chetano_novedades_yes_no', 'productos_chetano_novedades_yes_no', 'planillas_chetano_novedades_yes_no', 'ventas_chetano', 'dom_chetano', 'mp_chetano'] as $chetanoFieldName) {
+foreach (['novedades_chetano', 'chetano_novedades', 'formatos_chetano', 'ventas_chetano', 'dom_chetano', 'mp_chetano'] as $chetanoFieldName) {
     test_assert_same(true, isset($operationsFieldsByName[$chetanoFieldName]), 'Chetano field in operations: ' . $chetanoFieldName);
     test_assert_same(['PANCE', 'UNICENTRO'], $operationsFieldsByName[$chetanoFieldName]['sedes'] ?? null, 'Chetano field sedes: ' . $chetanoFieldName);
 }
@@ -729,9 +729,9 @@ test_assert_same('subsection', $operationsFieldsByName['novedades_chetano']['typ
 $panceFieldNames = app_bitacora_collect_field_names($companyOneSections, 'PANCE');
 $unicentroFieldNames = app_bitacora_collect_field_names($companyOneSections, 'UNICENTRO');
 $ciudadJardinFieldNames = app_bitacora_collect_field_names($companyOneSections, 'CIUDAD JARDÍN');
-test_assert_same(true, in_array('procesados_chetano_novedades_yes_no', $panceFieldNames, true), 'Chetano visible in PANCE');
-test_assert_same(true, in_array('procesados_chetano_novedades_yes_no', $unicentroFieldNames, true), 'Chetano visible in UNICENTRO');
-test_assert_same(false, in_array('procesados_chetano_novedades_yes_no', $ciudadJardinFieldNames, true), 'Chetano hidden outside configured sedes');
+test_assert_same(true, in_array('formatos_chetano', $panceFieldNames, true), 'Chetano visible in PANCE');
+test_assert_same(true, in_array('formatos_chetano', $unicentroFieldNames, true), 'Chetano visible in UNICENTRO');
+test_assert_same(false, in_array('formatos_chetano', $ciudadJardinFieldNames, true), 'Chetano hidden outside configured sedes');
 $companyOneDraftDefinitions = bit_draft_field_definitions($companyOneSections, 'PANCE');
 test_assert_same(true, count($companyOneDraftDefinitions) > 0, 'full PANCE schema supports drafts');
 $configuredCompanyOneSections = app_bitacora_apply_config_json($companyOneSections, ['dynamic_fields' => []]);
@@ -1033,6 +1033,23 @@ test_assert_same(900, app_session_timeout_seconds('SESSION_IDLE_TIMEOUT_SECONDS'
 $_ENV['SESSION_MAX_LIFETIME_SECONDS'] = 'invalid';
 putenv('SESSION_MAX_LIFETIME_SECONDS=invalid');
 test_assert_same(0, app_session_timeout_seconds('SESSION_MAX_LIFETIME_SECONDS'), 'app_session_timeout_seconds invalid');
+
+$_ENV['SESSION_IDLE_TIMEOUT_SECONDS'] = '3600';
+putenv('SESSION_IDLE_TIMEOUT_SECONDS=3600');
+$_ENV['SESSION_MAX_LIFETIME_SECONDS'] = '43200';
+putenv('SESSION_MAX_LIFETIME_SECONDS=43200');
+$previousSession = $_SESSION ?? [];
+$_SESSION = [
+    's_usuario' => 'test-user',
+    's_session_created_at' => 1000,
+    's_last_activity_at' => 2000,
+];
+$sessionExpiration = app_session_expiration_data(5000);
+test_assert_same(5600, $sessionExpiration['idle_expires_at'], 'app_session_expiration_data idle deadline');
+test_assert_same(44200, $sessionExpiration['max_expires_at'], 'app_session_expiration_data max deadline');
+test_assert_same(5600, $sessionExpiration['expires_at'], 'app_session_expiration_data earliest deadline');
+test_assert_same(600, app_session_warning_seconds(), 'app_session_warning_seconds');
+$_SESSION = $previousSession;
 
 foreach ([
     'SMTP_HOST' => 'mailpit',
