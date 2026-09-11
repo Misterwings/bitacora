@@ -722,7 +722,12 @@ function bit_render_branch_group(array $field, array $data): array
 
     $branch = $answer === 'Si' ? 'si' : 'no';
     $branchKey = $branch . '_fields';
-    $rows = [bit_render_detail($label, $answer, true, false, true)];
+    $answerLabel = trim((string) ($field['answer_label'] ?? ''));
+    if ($answerLabel !== '') {
+        $rows = ['<div class="sub-item"><strong style="color:#d71920;">' . bit_h($label) . '</strong> <strong style="color:#000;">' . bit_h($answerLabel) . ':</strong> <span style="color:#000;">' . bit_h($answer) . '</span></div>'];
+    } else {
+        $rows = [bit_render_detail($label, $answer, true, false, true)];
+    }
     foreach ((array) ($field[$branchKey] ?? []) as $branchField) {
         $branchFieldName = (string) ($branchField['name'] ?? '');
         if ($branchFieldName === '') {

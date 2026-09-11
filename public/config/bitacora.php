@@ -980,15 +980,16 @@ function app_bitacora_default_form_sections(array $companyConfig, int $empresaId
                 'arroz_mexicano',
                 'ARROZ MEXICANO',
                 [
-                    app_bitacora_field('number', 'porciones', 'PORCIONES', ['col' => 'col-md-4', 'suffix_singular' => ' porción', 'suffix_plural' => ' porciones']),
-                    app_bitacora_field('text', 'responsable_preparacion', 'RESPONSABLE DE PREPARACIÓN', ['col' => 'col-md-4']),
-                    app_bitacora_field('text', 'reviso', 'REVISÓ', ['col' => 'col-md-4']),
+                    app_bitacora_field('number', 'porciones', 'PORCIONES', ['col' => 'col-md-6', 'suffix_singular' => ' porción', 'suffix_plural' => ' porciones']),
+                    app_bitacora_field('text', 'responsable_preparacion', 'RESPONSABLE DE PREPARACIÓN', ['col' => 'col-md-6']),
+                    app_bitacora_field('text', 'reviso', 'REVISÓ', ['col' => 'col-md-6']),
+                    app_bitacora_field('number', 'inventario_si_porciones_arroz', 'INVENTARIO DE PORCIONES DE ARROZ', ['col' => 'col-md-6', 'suffix_singular' => ' porción', 'suffix_plural' => ' porciones']),
                 ],
                 [
-                    app_bitacora_field('number', 'inventario_porciones_arroz', 'INVENTARIO DE PORCIONES DE ARROZ', ['col' => 'col-md-6', 'suffix_singular' => ' porción', 'suffix_plural' => ' porciones']),
+                    app_bitacora_field('number', 'inventario_no_porciones_arroz', 'INVENTARIO DE PORCIONES DE ARROZ', ['col' => 'col-md-6', 'suffix_singular' => ' porción', 'suffix_plural' => ' porciones']),
                     app_bitacora_field('text', 'reviso', 'REVISÓ', ['col' => 'col-md-6']),
                 ],
-                ['order' => 0, 'col' => 'col-md-6']
+                ['order' => 0, 'col' => 'col-md-6', 'answer_label' => 'Preparación']
             ),
             app_bitacora_field('textarea', 'detalle_novedad_arroz_mexicano', 'NOVEDADES CON EL ARROZ MEXICANO', ['col' => 'col-md-12']),
             //app_bitacora_yes_no_field('procesados_novedades_yes_no', '¿CUALES PROCESADOS SE REALIZARON DURANTE LA JORNADA?', 'procesados_novedadesGroup', 'procesados_novedades', 'DETALLE LOS PROCESADOS REALIZADOS', 'textarea', ['col' => 'col-md-6', 'no_report_value' => 'El dia de hoy no se realizaron procesados.']),

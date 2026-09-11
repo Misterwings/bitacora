@@ -567,7 +567,8 @@ $arrozBranchField = app_bitacora_yes_no_branch_group_field(
     [
         app_bitacora_field('number', 'inventario_porciones_arroz', 'Inventario de porciones de Arroz'),
         app_bitacora_field('text', 'reviso', 'Revisó'),
-    ]
+    ],
+    ['answer_label' => 'Preparación']
 );
 test_assert_same(
     [
@@ -630,6 +631,7 @@ $arrozYesRows = bit_render_schema_field_rows($arrozBranchField, [
 ]);
 $arrozYesHtml = implode('', $arrozYesRows);
 test_assert_same(true, strpos($arrozYesHtml, 'style="color:#d71920;"') !== false, 'yes_no branch report title is red');
+test_assert_same(true, strpos($arrozYesHtml, 'style="color:#000;">Preparación:</strong>') !== false && strpos($arrozYesHtml, 'style="color:#000;">Si</span>') !== false, 'yes_no branch Si answer label is black');
 test_assert_same(true, strpos($arrozYesHtml, 'Porciones') !== false && strpos($arrozYesHtml, 'Ana') !== false, 'yes_no branch Si report fields');
 $arrozNoRows = bit_render_schema_field_rows($arrozBranchField, [
     'fecha_iso' => '2026-08-05',
@@ -638,15 +640,18 @@ $arrozNoRows = bit_render_schema_field_rows($arrozBranchField, [
     'arroz_prueba_no_reviso' => 'Luis',
 ]);
 $arrozNoHtml = implode('', $arrozNoRows);
-test_assert_same(true, strpos($arrozNoHtml, '</strong> No</div>') !== false, 'yes_no branch No preserves explicit answer');
+test_assert_same(true, strpos($arrozNoHtml, 'style="color:#d71920;">ARROZ MEXICANO</strong>') !== false, 'yes_no branch No keeps title red');
+test_assert_same(true, strpos($arrozNoHtml, 'style="color:#000;">Preparación:</strong>') !== false && strpos($arrozNoHtml, 'style="color:#000;">No</span>') !== false, 'yes_no branch No answer label is black');
 test_assert_same(false, strpos($arrozNoHtml, 'Sin novedad') !== false, 'yes_no branch No has no default response');
 test_assert_same(true, strpos($arrozNoHtml, 'Inventario de porciones de Arroz') !== false, 'yes_no branch No report fields');
-test_assert_same(true, strpos(implode('', bit_section_email_rows_for_field($arrozBranchField, [
+$arrozNoEmailHtml = implode('', bit_section_email_rows_for_field($arrozBranchField, [
     'fecha_iso' => '2026-08-05',
     'arroz_prueba' => 'No',
     'arroz_prueba_no_inventario_porciones_arroz' => '3',
     'arroz_prueba_no_reviso' => 'Luis',
-])), 'style="color:#d71920;"') !== false, 'yes_no branch email title is red');
+]));
+test_assert_same(true, strpos($arrozNoEmailHtml, 'style="color:#d71920;">ARROZ MEXICANO</strong>') !== false, 'yes_no branch email title is red');
+test_assert_same(true, strpos($arrozNoEmailHtml, 'style="color:#000;">Preparación:</strong>') !== false && strpos($arrozNoEmailHtml, 'style="color:#000;">No</span>') !== false, 'yes_no branch email answer label is black');
 $_POST = [];
 
 $yesNoNumericSuffixField = app_bitacora_yes_no_field(
