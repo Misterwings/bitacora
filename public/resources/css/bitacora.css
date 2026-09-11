@@ -2396,3 +2396,7 @@ textarea.bit-input {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+.bit-special-label {
+    color: var(--bit-red) !important;
+}

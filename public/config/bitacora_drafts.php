@@ -385,6 +385,31 @@ function bit_draft_field_definitions(array $sections, string $sede = ''): array
                 continue;
             }
 
+            if ($type === 'yes_no_branch_group') {
+                $answerField = $field;
+                $answerField['type'] = 'yes_no';
+                bit_draft_add_definition($definitions, $name, ['kind' => 'scalar', 'field' => $answerField]);
+                foreach (['si' => 'si_fields', 'no' => 'no_fields'] as $branch => $branchKey) {
+                    foreach ((array) ($field[$branchKey] ?? []) as $branchField) {
+                        $branchFieldName = (string) ($branchField['name'] ?? '');
+                        if ($branchFieldName === '') {
+                            continue;
+                        }
+
+                        $draftBranchField = $branchField;
+                        if ((string) ($draftBranchField['type'] ?? '') === 'simple_radio') {
+                            $draftBranchField['type'] = 'yes_no';
+                        }
+                        bit_draft_add_definition(
+                            $definitions,
+                            app_bitacora_branch_group_field_name($name, $branch, $branchFieldName),
+                            ['kind' => 'scalar', 'field' => $draftBranchField]
+                        );
+                    }
+                }
+                continue;
+            }
+
             if ($type === 'plant') {
                 $answerField = $field;
                 $answerField['type'] = 'yes_no';

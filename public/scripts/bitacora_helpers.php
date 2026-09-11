@@ -266,6 +266,7 @@ function bit_get_config(int $empresaId, string $sede): array
         'quantity_groups' => app_bitacora_collect_fields_by_type($sections, ['yes_no_quantity_group'], $sede),
         'direct_quantity_groups' => app_bitacora_collect_fields_by_type($sections, ['quantity_group'], $sede),
         'detail_groups' => app_bitacora_collect_fields_by_type($sections, ['yes_no_detail_group'], $sede),
+        'branch_groups' => app_bitacora_collect_fields_by_type($sections, ['yes_no_branch_group'], $sede),
         'multiselect_detail_groups' => app_bitacora_collect_fields_by_type($sections, ['multiselect_detail_group'], $sede),
     ];
 
@@ -435,14 +436,15 @@ function bit_normalize_data(array $post, array $config): array
     return $data;
 }
 
-function bit_render_detail(string $title, string $value, bool $mostrarSiVacio = false): string
+function bit_render_detail(string $title, string $value, bool $mostrarSiVacio = false, bool $mostrarSinNovedadParaNo = true, bool $tituloRojo = false): string
 {
-    $value = bit_report_display_value($value);
+    $value = $mostrarSinNovedadParaNo ? bit_report_display_value($value) : trim($value);
 
     if (!$mostrarSiVacio && $value === '') {
         return '';
     }
-    return '<div class="sub-item"><strong>' . bit_h($title) . ':</strong> ' . bit_e($value) . '</div>';
+    $titleStyle = $tituloRojo ? ' style="color:#d71920;"' : '';
+    return '<div class="sub-item"><strong' . $titleStyle . '>' . bit_h($title) . ':</strong> ' . bit_e($value) . '</div>';
 }
 
 function bit_report_yes_no_is_silent(array $field, array $data, string $answer, string $detail = ''): bool
@@ -705,6 +707,37 @@ function bit_render_detail_group(array $field, array $data): array
     return $rows;
 }
 
+function bit_render_branch_group(array $field, array $data): array
+{
+    if (!app_bitacora_field_available_for_date($field, (string) ($data['fecha_iso'] ?? ''))) {
+        return [];
+    }
+
+    $name = (string) ($field['name'] ?? '');
+    $label = (string) ($field['label'] ?? $name);
+    $answer = trim((string) ($data[$name] ?? ''));
+    if (!in_array($answer, ['Si', 'No'], true)) {
+        return [];
+    }
+
+    $branch = $answer === 'Si' ? 'si' : 'no';
+    $branchKey = $branch . '_fields';
+    $rows = [bit_render_detail($label, $answer, true, false, true)];
+    foreach ((array) ($field[$branchKey] ?? []) as $branchField) {
+        $branchFieldName = (string) ($branchField['name'] ?? '');
+        if ($branchFieldName === '') {
+            continue;
+        }
+
+        $inputName = app_bitacora_branch_group_field_name($name, $branch, $branchFieldName);
+        $branchLabel = (string) ($branchField['label'] ?? $branchFieldName);
+        $value = bit_report_field_value($data[$inputName] ?? '', $branchField);
+        $rows[] = bit_render_detail($branchLabel, $value, false, false);
+    }
+
+    return $rows;
+}
+
 function bit_render_multiselect_detail_group(array $field, array $data): array
 {
     $name = (string) ($field['name'] ?? '');
@@ -754,6 +787,9 @@ function bit_render_schema_field_rows(array $field, array $data): array
     }
     if ($type === 'yes_no_detail_group') {
         return bit_render_detail_group($field, $data);
+    }
+    if ($type === 'yes_no_branch_group') {
+        return bit_render_branch_group($field, $data);
     }
     if ($type === 'multiselect_detail_group') {
         return bit_render_multiselect_detail_group($field, $data);

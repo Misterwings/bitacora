@@ -171,6 +171,18 @@ function bit_admin_field_identifiers(array $field): array
         }
     }
 
+    if ($type === 'yes_no_branch_group') {
+        $groupName = trim((string) ($field['name'] ?? ''));
+        foreach (['si' => 'si_fields', 'no' => 'no_fields'] as $branch => $branchKey) {
+            foreach ((array) ($field[$branchKey] ?? []) as $branchField) {
+                $branchFieldName = trim((string) ($branchField['name'] ?? ''));
+                if ($groupName !== '' && $branchFieldName !== '') {
+                    $identifiers[app_bitacora_branch_group_field_name($groupName, $branch, $branchFieldName)] = true;
+                }
+            }
+        }
+    }
+
     if (in_array($type, ['yes_no_quantity_group', 'quantity_group'], true)) {
         $groupName = trim((string) ($field['name'] ?? ''));
         $max = max(1, min(10, (int) ($field['max'] ?? 10)));

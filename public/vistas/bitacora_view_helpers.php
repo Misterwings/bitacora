@@ -375,6 +375,45 @@ function bit_view_yes_no_detail_group_field(array $field): void
     echo '</div></div></div>';
 }
 
+function bit_view_yes_no_branch_group_field(array $field): void
+{
+    $name = (string) ($field['name'] ?? '');
+    $col = (string) ($field['col'] ?? 'col-md-12');
+    $requiredAttr = !empty($field['required']) ? ' data-required="1"' : '';
+    $sedeAttr = bit_view_sede_attr($field);
+    $hiddenClass = !empty($field['sedes']) ? ' bit-initial-hidden' : '';
+
+    echo '<div class="form-group bit-field ' . app_h($col) . $hiddenClass . ' bit-branch-group" data-group-name="' . app_h($name) . '"' . $requiredAttr . $sedeAttr . '>';
+    echo '<label class="bit-label bit-special-label">' . app_h((string) ($field['label'] ?? $name)) . (!empty($field['required']) ? ' <span class="text-danger">*</span>' : '') . '</label>';
+    echo '<div class="bit-radio-group">';
+    echo '<label class="bit-radio-pill"><input type="radio" class="bit-human-toggle" name="' . app_h($name) . '" value="Si" data-dynamic-field="1"> Si</label>';
+    echo '<label class="bit-radio-pill"><input type="radio" class="bit-human-toggle" name="' . app_h($name) . '" value="No" data-dynamic-field="1"> No</label>';
+    echo '</div>';
+
+    foreach (['si' => 'si_fields', 'no' => 'no_fields'] as $branch => $branchKey) {
+        echo '<div class="bit-detail-panel bit-branch-panel bit-initial-hidden" data-branch="' . app_h($branch) . '">';
+        echo '<div class="form-row">';
+        foreach ((array) ($field[$branchKey] ?? []) as $branchField) {
+            $branchFieldName = (string) ($branchField['name'] ?? '');
+            if ($branchFieldName === '') {
+                continue;
+            }
+
+            $controlName = app_bitacora_branch_group_field_name($name, $branch, $branchFieldName);
+            $controlId = $controlName;
+            $controlType = (string) ($branchField['type'] ?? 'text');
+            $controlCol = (string) ($branchField['col'] ?? ($controlType === 'textarea' ? 'col-md-12' : 'col-md-6'));
+            echo '<div class="form-group bit-field ' . app_h($controlCol) . '">';
+            bit_view_label($controlId, (string) ($branchField['label'] ?? $branchFieldName), (bool) ($branchField['required'] ?? false));
+            bit_view_dependent_control($branchField, $controlName, $controlId);
+            echo '</div>';
+        }
+        echo '</div></div>';
+    }
+
+    echo '</div>';
+}
+
 function bit_view_subsection(array $field): void
 {
     $hiddenClass = !empty($field['sedes']) ? ' bit-initial-hidden' : '';
@@ -434,6 +473,9 @@ function bit_view_render_field(array $field): void
             break;
         case 'yes_no_detail_group':
             bit_view_yes_no_detail_group_field($field);
+            break;
+        case 'yes_no_branch_group':
+            bit_view_yes_no_branch_group_field($field);
             break;
     }
 }

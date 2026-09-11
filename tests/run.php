@@ -556,6 +556,99 @@ $yesNoDetailDefaultRows = bit_render_detail_group(
 );
 test_assert_same([], $yesNoDetailDefaultRows, 'yes_no detail group default No is omitted from report');
 
+$arrozBranchField = app_bitacora_yes_no_branch_group_field(
+    'arroz_prueba',
+    'ARROZ MEXICANO',
+    [
+        app_bitacora_field('number', 'porciones', 'Porciones'),
+        app_bitacora_field('text', 'responsable_preparacion', 'Responsable de Preparación'),
+        app_bitacora_field('text', 'reviso', 'Revisó'),
+    ],
+    [
+        app_bitacora_field('number', 'inventario_porciones_arroz', 'Inventario de porciones de Arroz'),
+        app_bitacora_field('text', 'reviso', 'Revisó'),
+    ]
+);
+test_assert_same(
+    [
+        'arroz_prueba',
+        'arroz_prueba_si_porciones',
+        'arroz_prueba_si_responsable_preparacion',
+        'arroz_prueba_si_reviso',
+        'arroz_prueba_no_inventario_porciones_arroz',
+        'arroz_prueba_no_reviso',
+    ],
+    app_bitacora_collect_field_names([['fields' => [$arrozBranchField]]]),
+    'yes_no branch group submitted names'
+);
+ob_start();
+bit_view_render_field($arrozBranchField);
+$arrozBranchFormHtml = (string) ob_get_clean();
+test_assert_same(true, strpos($arrozBranchFormHtml, 'bit-special-label') !== false, 'yes_no branch group red form title');
+test_assert_same(true, strpos($arrozBranchFormHtml, 'data-branch="si"') !== false && strpos($arrozBranchFormHtml, 'data-branch="no"') !== false, 'yes_no branch group renders both branches');
+test_assert_same(true, strpos($arrozBranchFormHtml, 'name="arroz_prueba_si_porciones"') !== false, 'yes_no branch group renders Si number');
+test_assert_same(true, strpos($arrozBranchFormHtml, 'name="arroz_prueba_no_reviso"') !== false, 'yes_no branch group isolates No repeated field');
+$arrozBranchDefinitions = bit_draft_field_definitions([['fields' => [$arrozBranchField]]]);
+test_assert_same('yes_no', $arrozBranchDefinitions['arroz_prueba']['field']['type'] ?? null, 'yes_no branch answer draft definition');
+test_assert_same('number', $arrozBranchDefinitions['arroz_prueba_no_inventario_porciones_arroz']['field']['type'] ?? null, 'yes_no branch No number draft definition');
+test_assert_same(
+    [
+        'arroz_prueba' => 'Si',
+        'arroz_prueba_si_porciones' => '8',
+        'arroz_prueba_si_responsable_preparacion' => 'Ana',
+        'arroz_prueba_si_reviso' => 'Luis',
+    ],
+    bit_draft_sanitize_payload([
+        'arroz_prueba' => 'Si',
+        'arroz_prueba_si_porciones' => '8',
+        'arroz_prueba_si_responsable_preparacion' => 'Ana',
+        'arroz_prueba_si_reviso' => 'Luis',
+    ], [['fields' => [$arrozBranchField]]], []),
+    'yes_no branch Si draft payload'
+);
+$_POST = [
+    'arroz_prueba' => 'Si',
+    'arroz_prueba_si_porciones' => '8',
+    'arroz_prueba_si_responsable_preparacion' => 'Ana',
+    'arroz_prueba_si_reviso' => 'Luis',
+];
+test_assert_same([true, ''], bit_validate_branch_groups([$arrozBranchField], '2026-08-05'), 'yes_no branch Si validation');
+$_POST = [
+    'arroz_prueba' => 'No',
+    'arroz_prueba_no_inventario_porciones_arroz' => '3',
+    'arroz_prueba_no_reviso' => 'Luis',
+];
+test_assert_same([true, ''], bit_validate_branch_groups([$arrozBranchField], '2026-08-05'), 'yes_no branch No validation');
+unset($_POST['arroz_prueba_no_reviso']);
+test_assert_same([false, 'El campo "ARROZ MEXICANO - Revisó" es obligatorio.'], bit_validate_branch_groups([$arrozBranchField], '2026-08-05'), 'yes_no branch validates active No fields');
+$arrozYesRows = bit_render_schema_field_rows($arrozBranchField, [
+    'fecha_iso' => '2026-08-05',
+    'arroz_prueba' => 'Si',
+    'arroz_prueba_si_porciones' => '8',
+    'arroz_prueba_si_responsable_preparacion' => 'Ana',
+    'arroz_prueba_si_reviso' => 'Luis',
+]);
+$arrozYesHtml = implode('', $arrozYesRows);
+test_assert_same(true, strpos($arrozYesHtml, 'style="color:#d71920;"') !== false, 'yes_no branch report title is red');
+test_assert_same(true, strpos($arrozYesHtml, 'Porciones') !== false && strpos($arrozYesHtml, 'Ana') !== false, 'yes_no branch Si report fields');
+$arrozNoRows = bit_render_schema_field_rows($arrozBranchField, [
+    'fecha_iso' => '2026-08-05',
+    'arroz_prueba' => 'No',
+    'arroz_prueba_no_inventario_porciones_arroz' => '3',
+    'arroz_prueba_no_reviso' => 'Luis',
+]);
+$arrozNoHtml = implode('', $arrozNoRows);
+test_assert_same(true, strpos($arrozNoHtml, '</strong> No</div>') !== false, 'yes_no branch No preserves explicit answer');
+test_assert_same(false, strpos($arrozNoHtml, 'Sin novedad') !== false, 'yes_no branch No has no default response');
+test_assert_same(true, strpos($arrozNoHtml, 'Inventario de porciones de Arroz') !== false, 'yes_no branch No report fields');
+test_assert_same(true, strpos(implode('', bit_section_email_rows_for_field($arrozBranchField, [
+    'fecha_iso' => '2026-08-05',
+    'arroz_prueba' => 'No',
+    'arroz_prueba_no_inventario_porciones_arroz' => '3',
+    'arroz_prueba_no_reviso' => 'Luis',
+])), 'style="color:#d71920;"') !== false, 'yes_no branch email title is red');
+$_POST = [];
+
 $yesNoNumericSuffixField = app_bitacora_yes_no_field(
     'hielo_kolbitos_prueba',
     '¿Se compra hielo a Kolbitos?',

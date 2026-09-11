@@ -414,6 +414,24 @@ $(function () {
         });
     }
 
+    function updateHumanBranchGroup($group) {
+        var groupName = $group.data('group-name');
+        var groupRequired = $group.data('required') === 1 || $group.data('required') === true || String($group.data('required')) === '1';
+        var $radios = $group.find('input[type="radio"][name="' + groupName + '"]');
+        var answer = $radios.filter(':checked').val();
+        var activeBranch = answer === 'Si' ? 'si' : (answer === 'No' ? 'no' : '');
+
+        $radios.prop('disabled', false).prop('required', groupRequired);
+        $group.find('.bit-branch-panel').each(function () {
+            var $panel = $(this);
+            var active = String($panel.data('branch') || '') === activeBranch;
+            $panel.toggle(active);
+            $panel.find('.bit-human-dependent').each(function () {
+                setHumanControlState($(this), active);
+            });
+        });
+    }
+
     function updateDirectQuantityGroup($group) {
         var available = bitHumanGroupAvailable($group);
         var $quantity = $group.find('.bit-direct-quantity-input').first();
@@ -455,6 +473,9 @@ $(function () {
         });
         $('.bit-detail-group').each(function () {
             updateHumanDetailGroup($(this));
+        });
+        $('.bit-branch-group').each(function () {
+            updateHumanBranchGroup($(this));
         });
     }
 
@@ -661,6 +682,12 @@ $(function () {
             var $detailGroup = $(this).closest('.bit-detail-group');
             if ($detailGroup.length) {
                 updateHumanDetailGroup($detailGroup);
+                return;
+            }
+
+            var $branchGroup = $(this).closest('.bit-branch-group');
+            if ($branchGroup.length) {
+                updateHumanBranchGroup($branchGroup);
             }
         });
 

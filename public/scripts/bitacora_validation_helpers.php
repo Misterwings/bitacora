@@ -196,7 +196,7 @@ function bit_validate_multiselect_schema_field(array $field): array
 
 function bit_validate_schema_fields(array $sections, string $sede = ''): array
 {
-    $groupTypes = ['yes_no_quantity_group', 'quantity_group', 'yes_no_detail_group', 'multiselect_detail_group'];
+    $groupTypes = ['yes_no_quantity_group', 'quantity_group', 'yes_no_detail_group', 'yes_no_branch_group', 'multiselect_detail_group'];
 
     foreach ($sections as $section) {
         foreach ((array) ($section['fields'] ?? []) as $field) {
@@ -363,6 +363,46 @@ function bit_validate_detail_groups(array $groups, string $fecha): array
             $inputName = app_bitacora_detail_group_field_name($name, $detailFieldName);
             $inputLabel = $label . ' - ' . (string) ($detailField['label'] ?? $detailFieldName);
             [$valid, $message] = bit_validate_configured_value($detailField, $inputName, $inputLabel);
+            if (!$valid) {
+                return [false, $message];
+            }
+        }
+    }
+
+    return [true, ''];
+}
+
+function bit_validate_branch_groups(array $groups, string $fecha): array
+{
+    foreach ($groups as $group) {
+        if (!app_bitacora_field_available_for_date($group, $fecha)) {
+            continue;
+        }
+
+        $name = (string) ($group['name'] ?? '');
+        $label = (string) ($group['label'] ?? $name);
+        $answer = trim((string) ($_POST[$name] ?? ''));
+        $required = (bool) ($group['required'] ?? false);
+
+        if ($required && !in_array($answer, ['Si', 'No'], true)) {
+            return [false, 'El campo "' . $label . '" debe ser Si o No.'];
+        }
+
+        if ($answer === '') {
+            continue;
+        }
+
+        $branch = $answer === 'Si' ? 'si' : 'no';
+        $branchKey = $branch . '_fields';
+        foreach ((array) ($group[$branchKey] ?? []) as $branchField) {
+            $branchFieldName = (string) ($branchField['name'] ?? '');
+            if ($branchFieldName === '') {
+                continue;
+            }
+
+            $inputName = app_bitacora_branch_group_field_name($name, $branch, $branchFieldName);
+            $inputLabel = $label . ' - ' . (string) ($branchField['label'] ?? $branchFieldName);
+            [$valid, $message] = bit_validate_configured_value($branchField, $inputName, $inputLabel);
             if (!$valid) {
                 return [false, $message];
             }

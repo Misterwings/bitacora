@@ -52,6 +52,9 @@ function bit_section_email_rows_for_field(array $field, array $data): array
     if ($type === 'yes_no_detail_group') {
         return bit_render_detail_group($field, $data);
     }
+    if ($type === 'yes_no_branch_group') {
+        return bit_render_branch_group($field, $data);
+    }
     if ($type === 'multiselect_detail_group') {
         return bit_render_multiselect_detail_group($field, $data);
     }
@@ -205,7 +208,7 @@ function bit_render_supervision_body(array $sections, array $data): string
             }
 
             $type = (string) ($field['type'] ?? 'text');
-            if (in_array($type, ['yes_no_quantity_group', 'quantity_group', 'yes_no_detail_group', 'multiselect_detail_group'], true)) {
+            if (in_array($type, ['yes_no_quantity_group', 'quantity_group', 'yes_no_detail_group', 'yes_no_branch_group', 'multiselect_detail_group'], true)) {
                 $groupRows = [];
                 if ($type === 'yes_no_quantity_group') {
                     $groupRows = bit_render_quantity_group($field, $data);
@@ -213,6 +216,8 @@ function bit_render_supervision_body(array $sections, array $data): string
                     $groupRows = bit_render_direct_quantity_group($field, $data);
                 } elseif ($type === 'yes_no_detail_group') {
                     $groupRows = bit_render_detail_group($field, $data);
+                } elseif ($type === 'yes_no_branch_group') {
+                    $groupRows = bit_render_branch_group($field, $data);
                 } else {
                     $groupRows = bit_render_multiselect_detail_group($field, $data);
                 }

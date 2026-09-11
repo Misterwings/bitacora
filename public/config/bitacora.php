@@ -699,6 +699,11 @@ function app_bitacora_detail_group_field_name(string $groupName, string $fieldNa
     return $groupName . '_' . $fieldName;
 }
 
+function app_bitacora_branch_group_field_name(string $groupName, string $branch, string $fieldName): string
+{
+    return $groupName . '_' . $branch . '_' . $fieldName;
+}
+
 function app_bitacora_yes_no_quantity_group_field(string $name, string $label, string $quantityName, string $quantityLabel, array $fields, array $extra = []): array
 {
     return array_merge([
@@ -743,6 +748,19 @@ function app_bitacora_yes_no_detail_group_field(string $name, string $label, arr
         'required' => true,
         'no_report_value' => 'Sin novedad',
         'fields' => $fields,
+        'col' => 'col-md-12',
+    ], $extra);
+}
+
+function app_bitacora_yes_no_branch_group_field(string $name, string $label, array $siFields, array $noFields, array $extra = []): array
+{
+    return array_merge([
+        'type' => 'yes_no_branch_group',
+        'name' => $name,
+        'label' => $label,
+        'required' => true,
+        'si_fields' => $siFields,
+        'no_fields' => $noFields,
         'col' => 'col-md-12',
     ], $extra);
 }
@@ -956,8 +974,23 @@ function app_bitacora_default_form_sections(array $companyConfig, int $empresaId
                 [
                     app_bitacora_field('text', 'nombre_colab_cocina', 'NOMBRE DEL COLABORADOR', ['col' => 'col-md-4']),
                     app_bitacora_field('textarea', 'detalle_novedad_cocina', 'MOTIVO DE LA NOVEDAD', ['col' => 'col-md-8']),
-                ], ['item_label' => 'COLABORADOR', 'order' => 0, 'col' => 'col-md-12', 'no_report_value' => 'El dia de hoy se trabajo con el personal completo.']
+                ], ['item_label' => 'COLABORADOR', 'order' => 0, 'col' => 'col-md-6', 'no_report_value' => 'El dia de hoy se trabajo con el personal completo.']
             ),
+            app_bitacora_yes_no_branch_group_field(
+                'arroz_mexicano',
+                'ARROZ MEXICANO',
+                [
+                    app_bitacora_field('number', 'porciones', 'PORCIONES', ['col' => 'col-md-4', 'suffix_singular' => ' porción', 'suffix_plural' => ' porciones']),
+                    app_bitacora_field('text', 'responsable_preparacion', 'RESPONSABLE DE PREPARACIÓN', ['col' => 'col-md-4']),
+                    app_bitacora_field('text', 'reviso', 'REVISÓ', ['col' => 'col-md-4']),
+                ],
+                [
+                    app_bitacora_field('number', 'inventario_porciones_arroz', 'INVENTARIO DE PORCIONES DE ARROZ', ['col' => 'col-md-6', 'suffix_singular' => ' porción', 'suffix_plural' => ' porciones']),
+                    app_bitacora_field('text', 'reviso', 'REVISÓ', ['col' => 'col-md-6']),
+                ],
+                ['order' => 0, 'col' => 'col-md-6']
+            ),
+            app_bitacora_field('textarea', 'detalle_novedad_arroz_mexicano', 'NOVEDADES CON EL ARROZ MEXICANO', ['col' => 'col-md-12']),
             //app_bitacora_yes_no_field('procesados_novedades_yes_no', '¿CUALES PROCESADOS SE REALIZARON DURANTE LA JORNADA?', 'procesados_novedadesGroup', 'procesados_novedades', 'DETALLE LOS PROCESADOS REALIZADOS', 'textarea', ['col' => 'col-md-6', 'no_report_value' => 'El dia de hoy no se realizaron procesados.']),
             //app_bitacora_yes_no_field('productos_cocina_novedades_yes_no', 'NOVEDADES CON LOS PRODUCTOS (PROXIMOS A VENCER)', 'productos_cocina_novedadesGroup', 'productos_cocina_novedades', 'DETALLE LOS PRODUCTOS PROXIMOS A VENCER PARA IMPULSAR SU VENTA', 'textarea', ['col' => 'col-md-6', 'no_report_value' => 'Sin productos próximos a vencer.']),
             //app_bitacora_yes_no_field('planillas_cocina_novedades_yes_no', 'FORMATOS DILIGENCIADOS DURANTE LA JORNADA', 'planillas_cocina_novedadesGroup', 'planillas_cocina_novedades', 'DETALLE DE FORMATOS DILIGENCIADOS', 'textarea', ['col' => 'col-md-6', 'no_report_value' => 'El dia de hoy no se diligenciaron formatos.']),
@@ -1954,6 +1987,16 @@ function app_bitacora_collect_field_names(array $sections, string $sede = ''): a
                     $detailFieldName = (string) ($detailField['name'] ?? '');
                     if ($detailFieldName !== '') {
                         $names[] = app_bitacora_detail_group_field_name($name, $detailFieldName);
+                    }
+                }
+            }
+            if ($type === 'yes_no_branch_group') {
+                foreach (['si' => 'si_fields', 'no' => 'no_fields'] as $branch => $branchKey) {
+                    foreach ((array) ($field[$branchKey] ?? []) as $branchField) {
+                        $branchFieldName = (string) ($branchField['name'] ?? '');
+                        if ($branchFieldName !== '') {
+                            $names[] = app_bitacora_branch_group_field_name($name, $branch, $branchFieldName);
+                        }
                     }
                 }
             }

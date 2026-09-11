@@ -473,6 +473,11 @@ function bit_handle_operational(int $empresaId, ?array $draftContext = null): vo
         bit_json_response(false, $detailMessage);
     }
 
+    [$validBranchGroups, $branchMessage] = bit_validate_branch_groups($config['branch_groups'] ?? [], trim((string) ($_POST['fechab'] ?? '')));
+    if (!$validBranchGroups) {
+        bit_json_response(false, $branchMessage);
+    }
+
     [$validVisitGroups, $visitMessage] = bit_validate_multiselect_detail_groups($config['multiselect_detail_groups'] ?? []);
     if (!$validVisitGroups) {
         bit_json_response(false, $visitMessage);
