@@ -27,6 +27,12 @@ $config = app_bitacora_config($empresaId);
 $pageTitle = $config['title'] ?? 'Bitácora Mister Wings';
 $empresaOptions = app_is_admin() ? app_bitacora_empresa_options() : [];
 $formType = (string) ($config['type'] ?? 'operational');
+$assetVersion = static function (string $path): string {
+    $hash = @hash_file('sha256', $path);
+    return is_string($hash) ? '?v=' . substr($hash, 0, 12) : '';
+};
+$bitacoraCssVersion = $assetVersion(__DIR__ . '/../resources/css/bitacora.css');
+$bitacoraJsVersion = $assetVersion(__DIR__ . '/../resources/js/bitacora.js');
 
 ?>
 <!doctype html>
@@ -38,7 +44,7 @@ $formType = (string) ($config['type'] ?? 'operational');
     <link rel="stylesheet" href="../resources/css/bootstrap.min.css">
     <link rel="stylesheet" href="../resources/sweetalert/sweetalert2.min.css">
     <link rel="stylesheet" href="../resources/select2/select2.min.css">
-    <link rel="stylesheet" href="../resources/css/bitacora.css">
+    <link rel="stylesheet" href="../resources/css/bitacora.css<?php echo app_h($bitacoraCssVersion); ?>">
     <link rel="stylesheet" href="../resources/css/session_timeout.css">
     <link rel="shortcut icon" href="../resources/img/LOGO ALITAS-09.png" alt="Logo">
 </head>
@@ -119,7 +125,7 @@ $formType = (string) ($config['type'] ?? 'operational');
 <script src="../resources/sweetalert/sweetalert2.all.min.js"></script>
 <script src="../resources/select2/select2.min.js"></script>
 <script src="../resources/js/session_timeout.js"></script>
-<script src="../resources/js/bitacora.js"></script>
+<script src="../resources/js/bitacora.js<?php echo app_h($bitacoraJsVersion); ?>"></script>
 <script src="../localstorage_bitacora.js"></script>
 </body>
 </html>
