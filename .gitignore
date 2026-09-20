@@ -3,6 +3,7 @@
 !.env.example
 !.env.production.example
 !.env.dev-real.example
+!.env.cpanel.example
 
 storage/*
 !storage/.gitkeep

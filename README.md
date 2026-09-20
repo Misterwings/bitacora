@@ -41,7 +41,9 @@ El correo principal puede incluir el PDF. Los correos enviados por sección no i
 
 ## Despliegue En Servidor
 
-Para producción usa `docker-compose.prod.yml`, que no incluye PhpMyAdmin, no expone MySQL y construye imágenes con el código y dependencias dentro.
+Para producción con Docker/Coolify usa `docker-compose.prod.yml`, que no incluye PhpMyAdmin, no expone MySQL y construye imágenes con el código y dependencias dentro.
+
+Para desplegar directamente en cPanel, configura el document root en `public/` y sigue la sección cPanel de [`DEPLOYMENT.md`](DEPLOYMENT.md). El ejemplo de variables específico es [`.env.cpanel.example`](.env.cpanel.example).
 
 Guía completa: [`DEPLOYMENT.md`](DEPLOYMENT.md).
 

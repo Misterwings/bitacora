@@ -1,0 +1,21 @@
+---
+deployment:
+  tasks:
+    # Change DEPLOYPATH if the domain uses another cPanel deployment directory.
+    - export DEPLOYPATH="${HOME}/public_html/bitacora-mw"
+    # cPanel commonly exposes these paths for EasyApache 4. Override them when needed.
+    - export PHP_BIN="${CPANEL_PHP_BIN:-/usr/local/bin/ea-php84}"
+    - export COMPOSER_BIN="${CPANEL_COMPOSER_BIN:-/opt/cpanel/composer/bin/composer}"
+    - /bin/mkdir -p "$DEPLOYPATH/public" "$DEPLOYPATH/database" "$DEPLOYPATH/scripts" "$DEPLOYPATH/storage/bitacoras_pdf" "$DEPLOYPATH/storage/logs" "$DEPLOYPATH/public/uploads/preventivos" "$DEPLOYPATH/public/uploads/correctivos" "$DEPLOYPATH/public/uploads/locativos/preventivos" "$DEPLOYPATH/public/uploads/locativos/correctivos"
+    # public/. copies dotfiles such as public/.htaccess without using a wildcard.
+    - if command -v rsync >/dev/null 2>&1; then rsync -a --delete --exclude='uploads/' --exclude='.well-known/' public/ "$DEPLOYPATH/public/"; else /bin/cp -R public/. "$DEPLOYPATH/public/"; fi
+    - if command -v rsync >/dev/null 2>&1; then rsync -a --delete database/ "$DEPLOYPATH/database/"; else /bin/cp -R database/. "$DEPLOYPATH/database/"; fi
+    - if command -v rsync >/dev/null 2>&1; then rsync -a --delete scripts/ "$DEPLOYPATH/scripts/"; else /bin/cp -R scripts/. "$DEPLOYPATH/scripts/"; fi
+    - /bin/cp composer.json "$DEPLOYPATH/composer.json"
+    - /bin/cp composer.lock "$DEPLOYPATH/composer.lock"
+    - /usr/bin/test -r "$DEPLOYPATH/.env"
+    - "$PHP_BIN" "$COMPOSER_BIN" install --working-dir="$DEPLOYPATH" --no-dev --prefer-dist --no-interaction --optimize-autoloader --no-scripts
+    - /bin/chmod -R u+rwX "$DEPLOYPATH/storage" "$DEPLOYPATH/public/uploads"
+    - /bin/chmod 600 "$DEPLOYPATH/.env"
+    - "$PHP_BIN" "$DEPLOYPATH/database/migrate.php"
+    - "$PHP_BIN" "$DEPLOYPATH/scripts/import_bitacora_recipients.php"

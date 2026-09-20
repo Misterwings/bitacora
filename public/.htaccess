@@ -1,0 +1,40 @@
+# Apache front controller and hardening for cPanel.
+Options -Indexes
+DirectoryIndex index.php
+AddDefaultCharset UTF-8
+
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; style-src-elem 'self' 'unsafe-inline'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+<FilesMatch "^(?:\.env(?:\..*)?|composer\.(?:json|lock)|README(?:\..*)?|error_log|.*\.(?:log|bak|old|map))$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Keep the health endpoints available when Apache replaces the Nginx proxy.
+    RewriteRule ^(?:healthz|readyz)/?$ php-healthz.php [END]
+
+    # Do not expose dotfiles, except for ACME/.well-known challenges.
+    RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,END,NC]
+
+    # These directories are used by PHP internally and must not be browsable.
+    RewriteRule ^(?:config|storage|logs|vendor)(?:/|$) - [F,END,NC]
+
+    # Keep uploaded files from being interpreted as executable content.
+    RewriteRule ^uploads/.*\.(?:php\d*|phtml|phar|shtml)$ - [F,END,NC]
+
+    # Match the public Nginx behavior: serve real files and route everything else
+    # through the application entrypoint.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [END]
+    RewriteRule ^ index.php [END,QSA]
+</IfModule>
