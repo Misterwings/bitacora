@@ -5,7 +5,7 @@ deployment:
     - export DEPLOYPATH="${HOME}/apps/bitacora-mw"
     # Ajusta estas rutas si el proveedor usa otros binarios de cPanel.
     - export PHP_BIN="${CPANEL_PHP_BIN:-/usr/local/bin/ea-php84}"
-    - export COMPOSER_BIN="${CPANEL_COMPOSER_BIN:-/opt/cpanel/composer/bin/composer}"
+    - export COMPOSER_BIN="${CPANEL_COMPOSER_BIN:-/usr/local/bin/composer}"
     - export RSYNC_BIN="${CPANEL_RSYNC_BIN:-/usr/bin/rsync}"
 
     # Validar herramientas y secretos antes de modificar produccion.
