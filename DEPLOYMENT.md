@@ -46,6 +46,7 @@ cPanel usa Apache y PHP-FPM/EA-PHP en lugar de los servicios Docker. El reposito
 - PHP 8.4 seleccionado para el dominio y disponible para CLI, porque `composer.json` requiere PHP `^8.4`.
 - Extensiones PHP `pdo_mysql`, `mbstring`, `gd`, `intl`, `zip`, `bcmath`, `openssl`, `xml` y `zlib`.
 - Composer disponible para la versión PHP seleccionada.
+- `rsync` disponible en `/usr/bin/rsync` o en una ruta configurada mediante `CPANEL_RSYNC_BIN`.
 - Apache con `mod_rewrite`, `mod_headers` y soporte para `.htaccess` mediante `AllowOverride FileInfo,Indexes,Limit`.
 - Una base MySQL creada desde cPanel y una cuenta SMTP válida.
 
@@ -54,13 +55,13 @@ cPanel usa Apache y PHP-FPM/EA-PHP en lugar de los servicios Docker. El reposito
 El despliegue debe conservar la raíz completa de la aplicación fuera del document root público. El valor predeterminado de `.cpanel.yml` es:
 
 ```text
-/home/usuario/public_html/bitacora-mw/
+/home/usuario/apps/bitacora-mw/
 ```
 
 El dominio debe apuntar exactamente a:
 
 ```text
-/home/usuario/public_html/bitacora-mw/public
+/home/usuario/apps/bitacora-mw/public
 ```
 
 No apuntes el dominio a la raíz `bitacora-mw`, porque expondría archivos de configuración, migraciones y scripts CLI.
@@ -68,7 +69,14 @@ No apuntes el dominio a la raíz `bitacora-mw`, porque expondría archivos de co
 ### Variables Y Secretos
 
 1. Crea la base de datos y el usuario desde **MySQL Databases**. Usa los nombres con el prefijo de la cuenta cPanel.
-2. Copia `.env.cpanel.example` como `.env` en `/home/usuario/public_html/bitacora-mw/`.
+2. Crea el destino privado y copia la plantilla como `.env` antes del primer despliegue:
+
+```bash
+mkdir -p /home/usuario/apps/bitacora-mw
+cp /home/usuario/repositories/bitacora-mw/.env.cpanel.example /home/usuario/apps/bitacora-mw/.env
+chmod 600 /home/usuario/apps/bitacora-mw/.env
+```
+
 3. Reemplaza las credenciales MySQL y SMTP, cambia `CPUSER` en `BITACORA_STORAGE_PATH` y conserva esa ruta fuera de `public/`.
 4. Genera `BITACORA_DRAFT_KEY_BASE64` con `openssl rand -base64 32` y respáldala junto con la base de datos.
 5. Mantén `SESSION_SECURE=true` cuando el dominio tenga HTTPS.
@@ -78,18 +86,18 @@ No apuntes el dominio a la raíz `bitacora-mw`, porque expondría archivos de co
 
 1. Crea el repositorio en **Git Version Control** usando una ruta privada, por ejemplo `/home/usuario/repositories/bitacora-mw`.
 2. Confirma que `.cpanel.yml` esté en la raíz del repositorio.
-3. Si el servidor usa rutas diferentes, ajusta `DEPLOYPATH`, `CPANEL_PHP_BIN` y `CPANEL_COMPOSER_BIN` al inicio del archivo.
+3. Si el servidor usa rutas diferentes, ajusta `DEPLOYPATH`, `CPANEL_PHP_BIN`, `CPANEL_COMPOSER_BIN` y `CPANEL_RSYNC_BIN` al inicio del archivo.
 4. Crea y configura `.env` antes del primer despliegue, porque las tareas ejecutan Composer y migraciones.
 5. Ejecuta **Deploy HEAD Commit** desde cPanel o usa el webhook configurado para despliegue automático.
 
-`.cpanel.yml` copia explícitamente `public/`, `database/`, `scripts/`, `composer.json` y `composer.lock`. Si `rsync` está disponible, elimina archivos de código obsoletos sin tocar `public/uploads`; si no está disponible, usa la copia POSIX de respaldo.
+`.cpanel.yml` valida PHP, Composer, rsync y `.env` antes de modificar producción. Después valida y audita Composer, sincroniza explícitamente `public/`, `database/` y `scripts/`, preserva `public/uploads`, y finalmente aplica migraciones e importa destinatarios.
 
 ### Primer Arranque
 
 Después del primer despliegue, crea el administrador por SSH desde la raíz desplegada:
 
 ```bash
-cd /home/usuario/public_html/bitacora-mw
+cd /home/usuario/apps/bitacora-mw
 read -s BITACORA_ADMIN_PASSWORD
 export BITACORA_ADMIN_PASSWORD
 export BITACORA_ADMIN_USERNAME=admin
@@ -105,14 +113,14 @@ Si el binario PHP tiene otra ruta, usa el mismo valor configurado en `CPANEL_PHP
 El ejemplo cPanel usa `BITACORA_MAIL_ASYNC=false`, por lo que el envío ocurre durante la petición y no necesita un worker permanente. Para limpiar PDFs y borradores, crea estos cron jobs desde **Cron Jobs** usando la ruta PHP de cPanel:
 
 ```cron
-0 * * * * /usr/local/bin/ea-php84 /home/usuario/public_html/bitacora-mw/database/cleanup_bitacora_pdfs.php >> /home/usuario/bitacora-pdf-cleanup.log 2>&1
-15 * * * * /usr/local/bin/ea-php84 /home/usuario/public_html/bitacora-mw/database/cleanup_bitacora_drafts.php >> /home/usuario/bitacora-draft-cleanup.log 2>&1
+0 * * * * /usr/local/bin/ea-php84 /home/usuario/apps/bitacora-mw/database/cleanup_bitacora_pdfs.php >> /home/usuario/bitacora-pdf-cleanup.log 2>&1
+15 * * * * /usr/local/bin/ea-php84 /home/usuario/apps/bitacora-mw/database/cleanup_bitacora_drafts.php >> /home/usuario/bitacora-draft-cleanup.log 2>&1
 ```
 
 Si se activa `BITACORA_MAIL_ASYNC=true`, agrega además un cron frecuente para `scripts/process_bitacora_email_queue.php`. No ejecutes los bucles Docker `worker_loop.sh` o `maintenance_loop.sh` como procesos web.
 
 ```cron
-*/5 * * * * /usr/local/bin/ea-php84 /home/usuario/public_html/bitacora-mw/scripts/process_bitacora_email_queue.php >> /home/usuario/bitacora-mail-queue.log 2>&1
+*/5 * * * * /usr/local/bin/ea-php84 /home/usuario/apps/bitacora-mw/scripts/process_bitacora_email_queue.php >> /home/usuario/bitacora-mail-queue.log 2>&1
 ```
 
 ### Verificación cPanel

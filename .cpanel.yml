@@ -1,21 +1,48 @@
 ---
 deployment:
   tasks:
-    # Change DEPLOYPATH if the domain uses another cPanel deployment directory.
-    - export DEPLOYPATH="${HOME}/public_html/bitacora-mw"
-    # cPanel commonly exposes these paths for EasyApache 4. Override them when needed.
+    # La aplicacion completa queda fuera de public_html.
+    - export DEPLOYPATH="${HOME}/apps/bitacora-mw"
+    # Ajusta estas rutas si el proveedor usa otros binarios de cPanel.
     - export PHP_BIN="${CPANEL_PHP_BIN:-/usr/local/bin/ea-php84}"
     - export COMPOSER_BIN="${CPANEL_COMPOSER_BIN:-/opt/cpanel/composer/bin/composer}"
+    - export RSYNC_BIN="${CPANEL_RSYNC_BIN:-/usr/bin/rsync}"
+
+    # Validar herramientas y secretos antes de modificar produccion.
+    - /usr/bin/test -x "$PHP_BIN"
+    - /usr/bin/test -r "$COMPOSER_BIN"
+    - /usr/bin/test -x "$RSYNC_BIN"
+    - /usr/bin/test -r "$DEPLOYPATH/.env"
+
+    # Crear estructura persistente.
     - /bin/mkdir -p "$DEPLOYPATH/public" "$DEPLOYPATH/database" "$DEPLOYPATH/scripts" "$DEPLOYPATH/storage/bitacoras_pdf" "$DEPLOYPATH/storage/logs" "$DEPLOYPATH/public/uploads/preventivos" "$DEPLOYPATH/public/uploads/correctivos" "$DEPLOYPATH/public/uploads/locativos/preventivos" "$DEPLOYPATH/public/uploads/locativos/correctivos"
-    # public/. copies dotfiles such as public/.htaccess without using a wildcard.
-    - if command -v rsync >/dev/null 2>&1; then rsync -a --delete --exclude='uploads/' --exclude='.well-known/' public/ "$DEPLOYPATH/public/"; else /bin/cp -R public/. "$DEPLOYPATH/public/"; fi
-    - if command -v rsync >/dev/null 2>&1; then rsync -a --delete database/ "$DEPLOYPATH/database/"; else /bin/cp -R database/. "$DEPLOYPATH/database/"; fi
-    - if command -v rsync >/dev/null 2>&1; then rsync -a --delete scripts/ "$DEPLOYPATH/scripts/"; else /bin/cp -R scripts/. "$DEPLOYPATH/scripts/"; fi
+
+    # Preparar y auditar dependencias antes de publicar el nuevo codigo.
     - /bin/cp composer.json "$DEPLOYPATH/composer.json"
     - /bin/cp composer.lock "$DEPLOYPATH/composer.lock"
-    - /usr/bin/test -r "$DEPLOYPATH/.env"
-    - "$PHP_BIN" "$COMPOSER_BIN" install --working-dir="$DEPLOYPATH" --no-dev --prefer-dist --no-interaction --optimize-autoloader --no-scripts
-    - /bin/chmod -R u+rwX "$DEPLOYPATH/storage" "$DEPLOYPATH/public/uploads"
+    - >-
+      "$PHP_BIN" "$COMPOSER_BIN" validate --strict --working-dir="$DEPLOYPATH"
+    - >-
+      "$PHP_BIN" "$COMPOSER_BIN" install --working-dir="$DEPLOYPATH" --no-dev --prefer-dist --no-interaction --optimize-autoloader --no-scripts
+    - >-
+      "$PHP_BIN" "$COMPOSER_BIN" audit --locked --working-dir="$DEPLOYPATH"
+
+    # public/. incluye archivos ocultos como public/.htaccess.
+    # uploads/ y .well-known/ son persistentes y no se eliminan.
+    - >-
+      "$RSYNC_BIN" -a --delete --exclude='uploads/' --exclude='.well-known/' public/ "$DEPLOYPATH/public/"
+    - >-
+      "$RSYNC_BIN" -a --delete database/ "$DEPLOYPATH/database/"
+    - >-
+      "$RSYNC_BIN" -a --delete scripts/ "$DEPLOYPATH/scripts/"
+
+    # Proteger secretos y directorios escribibles.
     - /bin/chmod 600 "$DEPLOYPATH/.env"
-    - "$PHP_BIN" "$DEPLOYPATH/database/migrate.php"
-    - "$PHP_BIN" "$DEPLOYPATH/scripts/import_bitacora_recipients.php"
+    - /bin/chmod -R u+rwX "$DEPLOYPATH/storage"
+    - /bin/chmod -R u+rwX "$DEPLOYPATH/public/uploads"
+
+    # Actualizar esquema e importar la configuracion administrada por BD.
+    - >-
+      "$PHP_BIN" "$DEPLOYPATH/database/migrate.php"
+    - >-
+      "$PHP_BIN" "$DEPLOYPATH/scripts/import_bitacora_recipients.php"
