@@ -2,6 +2,12 @@
 
 Aplicación PHP para registro, envío y generación de bitácoras por empresa/sede. El flujo principal usa la vista unificada `public/vistas/bitacora.php` y el handler `public/scripts/send_bitacora.php`.
 
+## Documentación
+
+- [`DOCUMENTACION_TECNICA.md`](DOCUMENTACION_TECNICA.md): arquitectura, módulos, configuración, seguridad, datos, operación, despliegue y diagnóstico.
+- [`MANUAL_USUARIO.md`](MANUAL_USUARIO.md): uso del formulario, borradores, PDF, envío y administración funcional.
+- [`DEPLOYMENT.md`](DEPLOYMENT.md): procedimientos detallados para Docker/Coolify y cPanel.
+
 ## Arranque Local
 
 1. Copia `.env.example` a `.env` y reemplaza `BITACORA_DRAFT_KEY_BASE64` con el resultado de `openssl rand -base64 32`.
